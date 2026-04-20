@@ -1,0 +1,1 @@
+"""ClassicModels analytics application."""

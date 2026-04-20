@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="hero">
+            <div class="hero-copy">
+                <span class="eyebrow">ClassicModels • ORM + RESTful API</span>
+                <h1>{{ app_title }}</h1>
+                <p>Hệ thống tra cứu, thống kê và báo cáo doanh số theo khách hàng, thời gian, mặt hàng và doanh thu trên cơ sở dữ liệu <strong>classicmodels</strong>.</p>
+            </div>
+            <div class="hero-note">
+                <div class="hero-metric">
+                    <span>Dữ liệu khai thác</span>
+                    <strong>Customers · Orders · OrderDetails · Products</strong>
+                </div>
+                <div class="hero-metric">
+                    <span>Màn hình nghiệp vụ</span>
+                    <strong>Search Center · Dashboard · Pivot Report</strong>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-grid">
+            <section class="panel panel-search">
+                <div class="panel-heading">
+                    <div>
+                        <span class="section-tag">01</span>
+                        <h2>Tra cứu nhanh</h2>
+                    </div>
+                    <p>Tìm trực tiếp khách hàng và mặt hàng qua REST API.</p>
+                </div>
+
+                <div class="search-grid">
+                    <article class="search-card">
+                        <div class="search-card-head">
+                            <h3>Khách hàng</h3>
+                            <button type="button" id="btn-search-customers" class="ghost-button">Tìm</button>
+                        </div>
+                        <label class="field">
+                            <span>Từ khóa</span>
+                            <input id="customer-search" type="text" placeholder="Tên khách hàng, liên hệ, điện thoại">
+                        </label>
+                        <div id="customer-results" class="result-list"></div>
+                    </article>
+
+                    <article class="search-card">
+                        <div class="search-card-head">
+                            <h3>Mặt hàng</h3>
+                            <button type="button" id="btn-search-products" class="ghost-button">Tìm</button>
+                        </div>
+                        <label class="field">
+                            <span>Từ khóa</span>
+                            <input id="product-search" type="text" placeholder="Tên sản phẩm, mã hàng, vendor">
+                        </label>
+                        <div id="product-results" class="result-list"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel panel-filters">
+                <div class="panel-heading">
+                    <div>
+                        <span class="section-tag">02</span>
+                        <h2>Bộ lọc phân tích</h2>
+                    </div>
+                    <p>Lọc theo khách hàng, thời gian, mặt hàng, quốc gia và trạng thái đơn.</p>
+                </div>
+
+                <form id="filters-form" class="filters-grid">
+                    <label class="field">
+                        <span>Từ ngày</span>
+                        <input type="date" name="date_from">
+                    </label>
+                    <label class="field">
+                        <span>Đến ngày</span>
+                        <input type="date" name="date_to">
+                    </label>
+                    <label class="field">
+                        <span>Khách hàng</span>
+                        <input type="text" name="customer_keyword" placeholder="Ví dụ: Atelier">
+                    </label>
+                    <label class="field">
+                        <span>Mặt hàng</span>
+                        <input type="text" name="product_keyword" placeholder="Ví dụ: Ferrari">
+                    </label>
+                    <label class="field">
+                        <span>Dòng sản phẩm</span>
+                        <select name="product_line" id="product-line-filter">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>Quốc gia</span>
+                        <select name="country" id="country-filter">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>Trạng thái</span>
+                        <select name="status" id="status-filter">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </label>
+                    <div class="actions">
+                        <button type="submit" class="primary-button">Cập nhật báo cáo</button>
+                        <button type="button" id="btn-reset" class="ghost-button">Xóa bộ lọc</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel panel-summary">
+                <div class="panel-heading">
+                    <div>
+                        <span class="section-tag">03</span>
+                        <h2>Thống kê tổng quan</h2>
+                    </div>
+                    <p id="dashboard-status">Đang chờ tải dữ liệu...</p>
+                </div>
+                <div id="summary-cards" class="summary-grid"></div>
+            </section>
+
+            <section class="panel panel-charts">
+                <div class="panel-heading">
+                    <div>
+                        <span class="section-tag">04</span>
+                        <h2>Biểu đồ doanh số</h2>
+                    </div>
+                    <p>Top khách hàng, xu hướng theo tháng và cơ cấu theo dòng sản phẩm.</p>
+                </div>
+
+                <div class="charts-grid">
+                    <article class="chart-card">
+                        <div class="chart-card-head">
+                            <h3>Top khách hàng</h3>
+                            <span>Doanh số</span>
+                        </div>
+                        <div id="customer-chart" class="chart-body"></div>
+                    </article>
+                    <article class="chart-card">
+                        <div class="chart-card-head">
+                            <h3>Xu hướng theo tháng</h3>
+                            <span>Revenue & quantity</span>
+                        </div>
+                        <div id="timeline-chart" class="chart-body"></div>
+                    </article>
+                    <article class="chart-card">
+                        <div class="chart-card-head">
+                            <h3>Cơ cấu dòng sản phẩm</h3>
+                            <span>Tỷ trọng doanh số</span>
+                        </div>
+                        <div id="line-chart" class="chart-body"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel panel-pivot">
+                <div class="panel-heading">
+                    <div>
+                        <span class="section-tag">05</span>
+                        <h2>Pivot report</h2>
+                    </div>
+                    <p>Ma trận tổng hợp động theo chiều hàng, cột và chỉ tiêu.</p>
+                </div>
+
+                <div class="pivot-controls">
+                    <label class="field compact">
+                        <span>Hàng</span>
+                        <select id="pivot-rows">
+                            <option value="customer_name">Khách hàng</option>
+                            <option value="country">Quốc gia</option>
+                            <option value="product_line">Dòng sản phẩm</option>
+                            <option value="product_name">Mặt hàng</option>
+                            <option value="status">Trạng thái</option>
+                        </select>
+                    </label>
+                    <label class="field compact">
+                        <span>Cột</span>
+                        <select id="pivot-columns">
+                            <option value="order_month">Tháng</option>
+                            <option value="country">Quốc gia</option>
+                            <option value="product_line">Dòng sản phẩm</option>
+                            <option value="status">Trạng thái</option>
+                        </select>
+                    </label>
+                    <label class="field compact">
+                        <span>Chỉ tiêu</span>
+                        <select id="pivot-metric">
+                            <option value="revenue">Doanh số</option>
+                            <option value="quantity">Số lượng</option>
+                        </select>
+                    </label>
+                    <button type="button" id="btn-refresh-pivot" class="ghost-button">Dựng pivot</button>
+                </div>
+                <div id="pivot-table" class="pivot-table-wrapper"></div>
+            </section>
+
+            <section class="panel panel-details">
+                <div class="panel-heading">
+                    <div>
+                        <span class="section-tag">06</span>
+                        <h2>Báo cáo chi tiết</h2>
+                    </div>
+                    <p>Bảng dòng giao dịch dùng cho đối chiếu và drill-down.</p>
+                </div>
+                <div class="table-toolbar">
+                    <span id="detail-range">0 dòng</span>
+                    <div class="table-actions">
+                        <button type="button" id="btn-prev-page" class="ghost-button">Trang trước</button>
+                        <button type="button" id="btn-next-page" class="ghost-button">Trang sau</button>
+                    </div>
+                </div>
+                <div class="table-shell">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Đơn hàng</th>
+                                <th>Khách hàng</th>
+                                <th>Quốc gia</th>
+                                <th>Mặt hàng</th>
+                                <th>Dòng SP</th>
+                                <th>Trạng thái</th>
+                                <th>Số lượng</th>
+                                <th>Đơn giá</th>
+                                <th>Doanh số</th>
+                            </tr>
+                        </thead>
+                        <tbody id="details-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', path='/js/app.js') }}" defer></script>
+</body>
+</html>
